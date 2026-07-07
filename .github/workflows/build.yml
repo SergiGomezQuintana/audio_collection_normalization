@@ -1,0 +1,12 @@
+name: Build Audio Collection Normalizer
+
+on:
+  workflow_dispatch:
+
+jobs:
+  hello:
+    runs-on: windows-latest
+
+    steps:
+      - name: Say hello
+        run: echo Hello from GitHub Actions!
