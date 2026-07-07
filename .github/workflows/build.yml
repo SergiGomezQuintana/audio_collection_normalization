@@ -70,6 +70,14 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Download FFmpeg (macOS)
+        run: |
+          mkdir -p third_party/macos
+
+          brew install ffmpeg
+
+          cp "$(which ffmpeg)" third_party/macos/ffmpeg
+
       - name: Build macOS application
         run: |
           python build_scripts/build_mac.py
