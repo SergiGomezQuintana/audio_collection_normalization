@@ -15,11 +15,29 @@ from scipy.signal import bilinear, lfilter, windows, tf2sos, sosfilt, resample_p
 import numpy as np
 import csv
 import subprocess
+import sys
+import os
 
+def get_ffmpeg():
+
+    if getattr(sys, "frozen", False):
+
+        exe_dir = Path(sys.executable).parent
+
+        if os.name == "nt":
+            return exe_dir / "ffmpeg.exe"
+
+        return exe_dir / "ffmpeg"
+
+    if os.name == "nt":
+        return "ffmpeg.exe"
+
+    return "ffmpeg"
+    
 def ffmpeg_read(filename):
 
     cmd = [
-        "ffmpeg",
+        str(get_ffmpeg()),
         "-i", str(filename),
         "-f", "f32le",
         "-acodec", "pcm_f32le",
@@ -29,11 +47,14 @@ def ffmpeg_read(filename):
         "-"
     ]
 
+    if os.name == "nt":
+        kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+
     p = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        creationflags=subprocess.CREATE_NO_WINDOW
+        **kwargs,
     )
 
     out, err = p.communicate()

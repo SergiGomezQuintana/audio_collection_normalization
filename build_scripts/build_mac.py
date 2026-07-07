@@ -40,6 +40,23 @@ def build(root: Path):
 
     ], check=True)
 
+    app = (
+        root
+        / "macos"
+        / f"{APP_NAME}.app"
+    )
+
+    target = (
+        app
+        / "Contents"
+        / "MacOS"
+    )
+
+    shutil.copy2(
+        root / "third_party" / "macos" / "ffmpeg",
+        target / "ffmpeg",
+    )
+
 
 def main():
 

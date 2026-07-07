@@ -1,14 +1,11 @@
 name: Build Audio Collection Normalizer
 
 on:
-  push:
-    branches:
-      - main
-
   workflow_dispatch:
 
 jobs:
-  build:
+
+  build-windows:
 
     runs-on: windows-latest
 
@@ -28,7 +25,7 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Build executable
+      - name: Build Windows executable
         run: |
           python build_scripts/build_win.py
 
@@ -37,3 +34,33 @@ jobs:
         with:
           name: AudioCollectionNormalizer-Windows
           path: windows/AudioCollectionNormalizer/
+
+  build-macos:
+
+    runs-on: macos-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build macOS application
+        run: |
+          python build_scripts/build_mac.py
+
+      - name: Upload macOS application
+        uses: actions/upload-artifact@v4
+        with:
+          name: AudioCollectionNormalizer-macOS
+          path: macos/AudioCollectionNormalizer.app

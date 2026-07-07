@@ -46,6 +46,17 @@ def build(root: Path):
 
     ], check=True)
 
+    dist = (
+        root
+        / "windows"
+        / APP_NAME
+    )
+
+    shutil.copy2(
+        root / "third_party" / "windows" / "ffmpeg.exe",
+        dist / "ffmpeg.exe",
+    )
+
 
 def main():
 
