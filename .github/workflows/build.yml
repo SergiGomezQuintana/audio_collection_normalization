@@ -30,3 +30,9 @@ jobs:
       - name: Build executable
         run: |
           python build_scripts/build_win.py
+
+      - name: Upload Windows executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: AudioCollectionNormalizer-Windows
+          path: windows/AudioCollectionNormalizer/
