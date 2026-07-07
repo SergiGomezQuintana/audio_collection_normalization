@@ -23,7 +23,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Verify installation
+      - name: Build executable
         run: |
-          python --version
-          pip list
+          python build_scripts/build_win.py
