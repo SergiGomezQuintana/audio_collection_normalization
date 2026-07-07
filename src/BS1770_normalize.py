@@ -33,7 +33,7 @@ def get_ffmpeg():
         return "ffmpeg.exe"
 
     return "ffmpeg"
-    
+
 def ffmpeg_read(filename):
 
     cmd = [
@@ -47,6 +47,8 @@ def ffmpeg_read(filename):
         "-"
     ]
 
+    kwargs = {}
+    
     if os.name == "nt":
         kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
 
