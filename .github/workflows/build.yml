@@ -25,6 +25,21 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Download FFmpeg (Windows)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force third_party/windows | Out-Null
+
+          Invoke-WebRequest `
+            -Uri https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip `
+            -OutFile ffmpeg.zip
+
+          Expand-Archive ffmpeg.zip -DestinationPath ffmpeg
+
+          $exe = Get-ChildItem ffmpeg -Recurse -Filter ffmpeg.exe | Select-Object -First 1
+
+          Copy-Item $exe.FullName third_party/windows/ffmpeg.exe
+
       - name: Build Windows executable
         run: |
           python build_scripts/build_win.py

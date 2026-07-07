@@ -52,11 +52,18 @@ def build(root: Path):
         / APP_NAME
     )
 
+    ffmpeg = root / "third_party" / "windows" / "ffmpeg.exe"
+
+    if not ffmpeg.exists():
+        raise RuntimeError(
+            f"Missing ffmpeg:\n{ffmpeg}"
+        )
+
     shutil.copy2(
-        root / "third_party" / "windows" / "ffmpeg.exe",
+        ffmpeg,
         dist / "ffmpeg.exe",
     )
-
+    
 
 def main():
 

@@ -52,8 +52,15 @@ def build(root: Path):
         / "MacOS"
     )
 
+    ffmpeg = root / "third_party" / "macos" / "ffmpeg"
+
+    if not ffmpeg.exists():
+        raise RuntimeError(
+            f"Missing ffmpeg:\n{ffmpeg}"
+        )
+
     shutil.copy2(
-        root / "third_party" / "macos" / "ffmpeg",
+        ffmpeg,
         target / "ffmpeg",
     )
 
