@@ -13,7 +13,7 @@ def clean(root: Path):
 def build(root: Path):
 
     entry = root / "src" / "gui.pyw"
-    output = root / "windows"
+    output = root / "macos"
 
     print("Python:", sys.executable)
     print("Root:", root)
@@ -26,21 +26,15 @@ def build(root: Path):
         "-m",
         "PyInstaller",
 
-        "--onefile",
+        "--onedir",
         "--windowed",
         "--clean",
 
-        "--name",
-        APP_NAME,
+        "--name", APP_NAME,
 
-        "--distpath",
-        str(output),
-
-        "--workpath",
-        str(root / "build"),
-
-        "--specpath",
-        str(root),
+        "--distpath", str(output),
+        "--workpath", str(root / "build"),
+        "--specpath", str(root),
 
         str(entry),
 
@@ -55,10 +49,14 @@ def main():
 
     build(root)
 
-    print("\nDone!")
-    print(
-        f"Executable: {root / 'windows' / (APP_NAME + '.exe')}"
+    app = (
+        root
+        / "macos"
+        / f"{APP_NAME}.app"
     )
+
+    print("\nDone!")
+    print(f"Application: {app}")
 
 
 if __name__ == "__main__":

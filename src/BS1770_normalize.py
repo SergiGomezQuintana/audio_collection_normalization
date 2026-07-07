@@ -11,9 +11,7 @@ from pathlib import Path
 import os
 import numpy as np
 import soundfile as sf
-from scipy.signal import bilinear, lfilter, windows
-from tqdm import tqdm
-from scipy.signal import bilinear, tf2sos, sosfilt, resample_poly
+from scipy.signal import bilinear, lfilter, windows, tf2sos, sosfilt, resample_poly
 import numpy as np
 import csv
 import subprocess
