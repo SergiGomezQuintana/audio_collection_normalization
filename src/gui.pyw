@@ -3,6 +3,7 @@ import traceback
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog, messagebox, scrolledtext
+from pathlib import Path
 
 from BS1770_normalize import normalize_folder
 
@@ -121,9 +122,17 @@ class NormalizeGUI:
         root.grid_columnconfigure(1, weight=1)
 
     def select_input(self):
+
         folder = filedialog.askdirectory()
+
         if folder:
+
             self.in_var.set(folder)
+
+            # Set default output folder
+            self.out_var.set(
+                str(Path(folder) / "norm")
+            )
 
     def select_output(self):
         folder = filedialog.askdirectory()
@@ -171,12 +180,20 @@ class NormalizeGUI:
 
         try:
 
+            if not self.out_var.get().strip():
+
+                self.out_var.set(
+                    str(Path(self.in_var.get()) / "norm")
+                )
+
             target = self.lufs_var.get().strip()
 
             if target.lower() != "auto":
                 target = float(target)
 
             self.write_log("Starting normalization...")
+
+
 
             normalize_folder(
                 in_folder=self.in_var.get(),

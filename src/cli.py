@@ -23,7 +23,9 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "out_folder",
-        help="Output folder for normalized MP3 files"
+        nargs="?",
+        default=None,
+        help="Output folder for normalized MP3 files (default: <input>/norm)"
     )
     
     parser.add_argument(
@@ -45,6 +47,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
+    if args.out_folder is None:
+        args.out_folder = str(Path(args.in_folder) / "norm")
     #
     # Parse target_lufs
     #
