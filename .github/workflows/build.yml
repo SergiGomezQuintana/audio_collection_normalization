@@ -4,9 +4,21 @@ on:
   workflow_dispatch:
 
 jobs:
-  hello:
+  build:
+
     runs-on: windows-latest
 
     steps:
-      - name: Say hello
-        run: echo Hello from GitHub Actions!
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Show Python version
+        run: |
+          python --version
+          pip --version
