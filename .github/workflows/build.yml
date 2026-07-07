@@ -95,41 +95,41 @@ jobs:
           name: AudioCollectionNormalizer-macOS
           path: macos/AudioCollectionNormalizer.app
 
-    create-release:
+  create-release:
 
-      needs:
-        - build-windows
-        - build-macos
+    needs:
+      - build-windows
+      - build-macos
 
-      runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-      steps:
+    steps:
 
-        - name: Download Windows build
-          uses: actions/download-artifact@v4
-          with:
-            name: AudioCollectionNormalizer-Windows
-            path: release/windows
+      - name: Download Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: AudioCollectionNormalizer-Windows
+          path: release/windows
 
-        - name: Download macOS build
-          uses: actions/download-artifact@v4
-          with:
-            name: AudioCollectionNormalizer-macOS
-            path: release/macos
+      - name: Download macOS build
+        uses: actions/download-artifact@v4
+        with:
+          name: AudioCollectionNormalizer-macOS
+          path: release/macos
 
-        - name: Package Windows
-          run: |
-            cd release/windows
-            zip -r ../../AudioCollectionNormalizer-Windows.zip .
+      - name: Package Windows
+        run: |
+          cd release/windows
+          zip -r ../../AudioCollectionNormalizer-Windows.zip .
 
-        - name: Package macOS
-          run: |
-            cd release/macos
-            zip -r ../../AudioCollectionNormalizer-macOS.zip .
+      - name: Package macOS
+        run: |
+          cd release/macos
+          zip -r ../../AudioCollectionNormalizer-macOS.zip .
 
-        - name: Create GitHub Release
-          uses: softprops/action-gh-release@v2
-          with:
-            files: |
-              AudioCollectionNormalizer-Windows.zip
-              AudioCollectionNormalizer-macOS.zip
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            AudioCollectionNormalizer-Windows.zip
+            AudioCollectionNormalizer-macOS.zip
