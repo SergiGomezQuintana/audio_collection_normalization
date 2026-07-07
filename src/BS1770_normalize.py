@@ -16,11 +16,9 @@ from tqdm import tqdm
 from scipy.signal import bilinear, tf2sos, sosfilt, resample_poly
 import numpy as np
 import csv
-
+import subprocess
 
 def ffmpeg_read(filename):
-    import subprocess
-    import numpy as np
 
     cmd = [
         "ffmpeg",
@@ -33,14 +31,19 @@ def ffmpeg_read(filename):
         "-"
     ]
 
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        creationflags=subprocess.CREATE_NO_WINDOW
+    )
+
     out, err = p.communicate()
 
     if p.returncode != 0:
         raise RuntimeError(err.decode())
 
-    audio = np.frombuffer(out, dtype=np.float32).copy()  # ✅ FIX
-
+    audio = np.frombuffer(out, dtype=np.float32).copy()
     audio = audio.reshape(-1, 2)
 
     return audio, 44100
@@ -453,8 +456,27 @@ def normalize_folder(
     in_folder,
     out_folder,
     target_lufs="auto",
-    true_peak_limit=-1.0
+    true_peak_limit=-1.0,
+    log_callback=None,
+    progress_callback=None,
 ):
+
+    def log(*args, **kwargs):
+        message = " ".join(str(a) for a in args)
+        if progress_callback is None:
+            print(message, **kwargs)
+        else:
+            log_callback(message)
+
+    def progress(current, total, phase):
+
+        if progress_callback is not None:
+            progress_callback(current, total, phase)
+        else:
+            print(f"\r{phase}: {current}/{total}", end="", flush=True)
+
+            if current == total:
+                print()
 
     in_folder = Path(in_folder).expanduser().resolve()
     out_folder = Path(out_folder).expanduser().resolve()
@@ -473,7 +495,9 @@ def normalize_folder(
 
     # print("\nAnalysing collection:\n")
 
-    for fn in tqdm(files, desc="Analysing collection"):
+    for i, fn in enumerate(files, start=1):
+
+        progress(i, len(files), "Analysing")
 
         y, fs = ffmpeg_read(fn)
 
@@ -517,34 +541,34 @@ def normalize_folder(
     # SUMMARY
     # ----------------------------------------------------------
 
-    print()
-    print("=" * 64)
+    log()
+    log("=" * 64)
 
-    print(f"Tracks analysed : {len(files)}")
+    log(f"Tracks analysed : {len(files)}")
 
-    print(
+    log(
         f"Target LUFS     : {target_lufs:.2f} "
         f"({'AUTO' if auto_mode else 'FIXED'})"
     )
 
-    print(
+    log(
         f"True Peak limit : {true_peak_limit:.2f} dBTP"
     )
 
     if auto_mode:
 
-        print(f"Limiting track  : {limiting_track}")
+        log(f"Limiting track  : {limiting_track}")
 
-        print(
+        log(
             f"Track LUFS      : {limiting_stats['lufs']:.2f}"
         )
 
-        print(
+        log(
             f"Track TruePeak  : {limiting_stats['true_peak']:.2f} dBTP"
         )
 
-    print("=" * 64)
-    print()
+    log("=" * 64)
+    log()
 
     # ----------------------------------------------------------
     # CSV
@@ -634,12 +658,11 @@ def normalize_folder(
         # PASS 2 : NORMALIZE + WRITE
         # ------------------------------------------------------
 
-        print("Applying gain adjustment...\n")
+        log("Applying gain adjustment...\n")
 
-        for n, item in enumerate(
-            analysis,
-            start=1
-        ):
+        for n, item in enumerate(analysis, start=1):
+
+            progress(n, len(files), "Normalizing")
 
             fn = item["file"]
 
@@ -662,22 +685,11 @@ def normalize_folder(
                 else "Loudness"
             )
 
-            print(
-
-                f"({n:>{digits}}/{len(files)}) "
-
-                f"{fn.name:35s}"
-
-                f" {stats['lufs']:7.2f}"
-
-                f" → {predicted_lufs:7.2f} LUFS"
-
-                f"  TP {stats['true_peak']:6.2f}"
-
-                f"  Gain {gain['gain']:+6.2f}"
-
-                f"  [{reason}]"
-
+            log(
+                f"({n:>{digits}}/{len(files)}) {fn.name}\n"
+                f"    LUFS {stats['lufs']:.2f} → {predicted_lufs:.2f} | "
+                f"TP {stats['true_peak']:.2f} dBTP | "
+                f"Gain {gain['gain']:+.2f} dB [{reason}]"
             )
 
             #
@@ -761,7 +773,7 @@ def normalize_folder(
 
             })
 
-    print()
-    print(f"Done. Files written to:\n{out_folder}")
-    print(f"CSV report:\n{csv_file}")
+    log()
+    log(f"Done. Files written to:\n{out_folder}")
+    log(f"CSV report:\n{csv_file}")
 

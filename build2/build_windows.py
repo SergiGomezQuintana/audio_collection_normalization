@@ -1,8 +1,11 @@
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 
 APP_NAME = "AudioCollectionNormalizer"
+
+
 
 
 def clean(root: Path):
@@ -12,9 +15,17 @@ def clean(root: Path):
 def build(root: Path):
     entry = root / "src" / "main.py"
     output = root / "windows"
-
+    
+    print("Python:", sys.executable)
+    print("Root:", root)
+    print("Entry exists:", entry.exists())
+    print("Entry:", entry)
+    print("Output:", output)
+    
     subprocess.run([
-        "pyinstaller",
+        sys.executable,
+        "-m",
+        "PyInstaller",
         "--onefile",
         "--clean",
         "--name", APP_NAME,
@@ -29,7 +40,8 @@ def main():
     root = Path(__file__).resolve().parent.parent
 
     clean(root)
-    build(root)
+    build(root)    
+    
 
     print(f"\nDone!")
     print(f"Executable: {root / 'windows' / (APP_NAME + '.exe')}")
