@@ -15,6 +15,8 @@ No Python or FFmpeg installation is required.
 
 ---
 
+## About BS1770 Audio Collection Normalizer
+
 A desktop application for loudness normalization of audio collections according to the **ITU-R BS.1770** recommendation.
 
 The application analyzes every audio file in a folder, measures its integrated loudness (LUFS) and True Peak level, computes the appropriate gain adjustment, and writes normalized copies while preserving the original audio format and encoding settings whenever possible.
