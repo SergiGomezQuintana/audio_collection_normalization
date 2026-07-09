@@ -17,6 +17,7 @@ import csv
 import subprocess
 import sys
 import os
+import json
 
 def get_ffmpeg():
 
@@ -34,21 +35,82 @@ def get_ffmpeg():
 
     return "ffmpeg"
 
+
+def get_ffprobe():
+
+    if getattr(sys, "frozen", False):
+
+        exe_dir = Path(sys.executable).parent
+
+        if os.name == "nt":
+            return exe_dir / "ffprobe.exe"
+
+        return exe_dir / "ffprobe"
+
+    if os.name == "nt":
+        return "ffprobe.exe"
+
+    return "ffprobe"
+
+def ffprobe_info(filename):
+
+    cmd = [
+        str(get_ffprobe()),
+        "-v", "error",
+        "-print_format", "json",
+        "-show_streams",
+        str(filename),
+    ]
+
+    kwargs = {}
+
+    if os.name == "nt":
+        kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+
+    p = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        **kwargs,
+    )
+
+    out, err = p.communicate()
+
+    if p.returncode != 0:
+        raise RuntimeError(err.decode())
+
+    info = json.loads(out)
+
+    stream = next(
+        s for s in info["streams"]
+        if s["codec_type"] == "audio"
+    )
+
+    return {
+        "sample_rate": int(stream["sample_rate"]),
+        "channels": int(stream["channels"]),
+        "codec": stream["codec_name"],
+        "bit_rate": int(stream.get("bit_rate", 0) or 0),
+        "sample_fmt": stream.get("sample_fmt"),
+        "bits_per_sample": int(stream.get("bits_per_sample", 0) or 0),
+        "container": Path(filename).suffix.lower(),
+    }
+
 def ffmpeg_read(filename):
+
+    info = ffprobe_info(filename)
 
     cmd = [
         str(get_ffmpeg()),
         "-i", str(filename),
         "-f", "f32le",
         "-acodec", "pcm_f32le",
-        "-ac", "2",
-        "-ar", "44100",
         "-loglevel", "error",
         "-"
     ]
 
     kwargs = {}
-    
+
     if os.name == "nt":
         kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
 
@@ -65,10 +127,100 @@ def ffmpeg_read(filename):
         raise RuntimeError(err.decode())
 
     audio = np.frombuffer(out, dtype=np.float32).copy()
-    audio = audio.reshape(-1, 2)
 
-    return audio, 44100
+    audio = audio.reshape(
+        -1,
+        info["channels"]
+    )
 
+    return audio, info
+
+def ffmpeg_write(filename, audio, info):
+
+    cmd = [
+        str(get_ffmpeg()),
+        "-y",
+
+        # Input is raw float32 PCM
+        "-f", "f32le",
+        "-ar", str(info["sample_rate"]),
+        "-ac", str(info["channels"]),
+        "-i", "-",
+    ]
+
+    codec = info["codec"]
+
+    #
+    # Output codec
+    #
+
+    if codec == "mp3":
+
+        cmd += [
+            "-c:a", "libmp3lame",
+            "-b:a", str(info["bit_rate"]),
+        ]
+
+    elif codec == "flac":
+
+        cmd += [
+            "-c:a", "flac",
+        ]
+
+    elif codec.startswith("pcm_"):
+
+        cmd += [
+            "-c:a", codec,
+        ]
+
+    elif codec == "aac":
+
+        cmd += [
+            "-c:a", "aac",
+            "-b:a", str(info["bit_rate"]),
+        ]
+
+    elif codec == "opus":
+
+        cmd += [
+            "-c:a", "libopus",
+            "-b:a", str(info["bit_rate"]),
+        ]
+
+    elif codec == "vorbis":
+
+        cmd += [
+            "-c:a", "libvorbis",
+        ]
+
+    else:
+
+        raise RuntimeError(
+            f"Unsupported codec: {codec}"
+        )
+
+    cmd += [
+        "-loglevel", "error",
+        str(filename),
+    ]
+
+    kwargs = {}
+
+    if os.name == "nt":
+        kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+
+    p = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        **kwargs,
+    )
+
+    _, err = p.communicate(audio.astype(np.float32).tobytes())
+
+    if p.returncode != 0:
+        raise RuntimeError(err.decode())
 # ----------------------------------------------------------------------
 # Utilities
 # ----------------------------------------------------------------------
@@ -481,6 +633,17 @@ def normalize_folder(
     log_callback=None,
     progress_callback=None,
 ):
+    SUPPORTED_EXTENSIONS = {
+        ".mp3",
+        ".wav",
+        ".flac",
+        ".aiff",
+        ".aif",
+        ".m4a",
+        ".aac",
+        ".ogg",
+        ".opus",
+    }
 
     def log(*args, **kwargs):
         message = " ".join(str(a) for a in args)
@@ -503,7 +666,10 @@ def normalize_folder(
     out_folder = Path(out_folder).expanduser().resolve()
     out_folder.mkdir(parents=True, exist_ok=True)
 
-    files = sorted(in_folder.glob("*.mp3"))
+    files = sorted(
+        f for f in in_folder.iterdir()
+        if f.is_file() and f.suffix.lower() in SUPPORTED_EXTENSIONS
+    )
 
     if len(files) == 0:
         raise RuntimeError(f"No mp3 files found in {in_folder}")
@@ -520,7 +686,8 @@ def normalize_folder(
 
         progress(i, len(files), "Analysing")
 
-        y, fs = ffmpeg_read(fn)
+        y, info = ffmpeg_read(fn)
+        fs = info['sample_rate']
 
         stats = analyze_track(y, fs)
 
@@ -717,13 +884,14 @@ def normalize_folder(
             # Apply gain
             #
 
-            y, fs = ffmpeg_read(fn)
+            y, info = ffmpeg_read(fn)
+            fs = info['sample_rate']
 
             y *= db_to_gain(gain["gain"])
 
             outfile = out_folder / fn.name
 
-            sf.write(outfile, y, fs)
+            ffmpeg_write(outfile, y, info)
 
             #
             # CSV row
