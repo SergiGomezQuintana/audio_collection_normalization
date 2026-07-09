@@ -1,5 +1,20 @@
 # BS1770 Audio Collection Normalizer
 
+Loudness normalization for entire audio collections according to the **ITU-R BS.1770** recommendation.
+
+[![Latest Release](https://img.shields.io/github/v/release/<username>/<repository>?display_name=release&style=for-the-badge)](https://github.com/<username>/<repository>/releases/latest)
+[![Windows](https://img.shields.io/badge/Windows-x64-blue?style=for-the-badge)](https://github.com/<username>/<repository>/releases/latest)
+[![macOS](https://img.shields.io/badge/macOS-Apple%20Silicon%20%26%20Intel-black?style=for-the-badge)](https://github.com/<username>/<repository>/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+
+## 📥 Download
+
+Download the latest precompiled version from the **[Releases](https://github.com/<username>/<repository>/releases/latest)** page.
+
+No Python or FFmpeg installation is required.
+
+---
+
 A desktop application for loudness normalization of audio collections according to the **ITU-R BS.1770** recommendation.
 
 The application analyzes every audio file in a folder, measures its integrated loudness (LUFS) and True Peak level, computes the appropriate gain adjustment, and writes normalized copies while preserving the original audio format and encoding settings whenever possible.
