@@ -2,14 +2,14 @@
 
 Loudness normalization for entire audio collections according to the **ITU-R BS.1770** recommendation.
 
-[![Latest Release](https://img.shields.io/github/v/release/<username>/<repository>?display_name=release&style=for-the-badge)](https://github.com/<username>/<repository>/releases/latest)
-[![Windows](https://img.shields.io/badge/Windows-x64-blue?style=for-the-badge)](https://github.com/<username>/<repository>/releases/latest)
-[![macOS](https://img.shields.io/badge/macOS-Apple%20Silicon%20%26%20Intel-black?style=for-the-badge)](https://github.com/<username>/<repository>/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/SergiGomezQuintana/audio_collection_normalization?display_name=release&style=for-the-badge)](https://github.com/SergiGomezQuintana/audio_collection_normalization/releases/latest)
+[![Windows](https://img.shields.io/badge/Windows-x64-blue?style=for-the-badge)](https://github.com/SergiGomezQuintana/audio_collection_normalization/releases/latest)
+[![macOS](https://img.shields.io/badge/macOS-Apple%20Silicon%20%26%20Intel-black?style=for-the-badge)](https://github.com/SergiGomezQuintana/audio_collection_normalization/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 ## 📥 Download
 
-Download the latest precompiled version from the **[Releases](https://github.com/<username>/<repository>/releases/latest)** page.
+Download the latest precompiled version from the **[Releases](https://github.com/SergiGomezQuintana/audio_collection_normalization/releases/latest)** page.
 
 No Python or FFmpeg installation is required.
 
